@@ -170,7 +170,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const newRow = document.createElement("tr");
       newRow.innerHTML = `
             <td>${index + 1}</td>
-            <td onclick="showModal(${index})">${rule.name}</td>
+            <td onclick="showModal(${index})" style="cursor: pointer;">${rule.name}</td>
             <td><button onclick="deleteRule(${index})"><span class='text-danger'>🗑️</span></button></td>
           `;
       ruleTable.appendChild(newRow);

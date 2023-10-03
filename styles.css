@@ -1,0 +1,76 @@
+/* Main Container */
+.main-container {
+    padding: 20px;
+    max-width: 900px;
+  margin: auto;
+  }
+  
+/* Water Tank */
+#container {
+    width: 150px;
+  }
+  
+  #tank {
+    height: 300px;
+    width: 100px;
+    position: relative;
+    border: 2px solid #000;
+  }
+  
+  #water {
+    width: 100%;
+    position: absolute;
+    bottom: 0;
+    background-color: blue;
+  }
+  
+  /* Level Indicator */
+#labels {
+    position: absolute;
+    right: -50px;
+    top: 0;
+    bottom: 0;
+    width: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  
+  #labels div {
+    position: relative;
+    width: 100%;
+    text-align: center;
+  }
+  
+  
+  /* Level Value */
+  #level {
+    text-align: center;
+    margin-top: 10px;
+  }
+  
+  /* Rules Table */
+  #form {
+    margin-top: 20px;
+  }
+  
+  .form-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .form-header h2 {
+    margin: 0;
+  }
+  
+  /* Add Rule Button */
+  #addRule {
+    cursor: pointer;
+  }
+  
+  /* Table */
+  table {
+    margin-top: 10px;
+  }
+  

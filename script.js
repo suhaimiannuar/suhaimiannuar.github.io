@@ -22,6 +22,13 @@ document.addEventListener("DOMContentLoaded", function () {
     level.textContent = levelText;
   }
 
+  tank.addEventListener('click', function(event) {
+    const rect = tank.getBoundingClientRect();
+    const y = event.clientY - rect.top;
+    const newLevel = 100 - (y / rect.height * 100);
+    setWaterLevel(newLevel);
+  });
+  
   tank.addEventListener("mousedown", function (event) {
     isDragging = true;
   });

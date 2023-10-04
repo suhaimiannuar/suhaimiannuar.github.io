@@ -1,6 +1,5 @@
 document.addEventListener("DOMContentLoaded", function () {
   let editIndex = null;
-  let ruleToDeleteIndex = null;
   // Initialize water tank
   const tank = document.getElementById("tank");
   const water = document.getElementById("water");
@@ -22,13 +21,13 @@ document.addEventListener("DOMContentLoaded", function () {
     level.textContent = levelText;
   }
 
-  tank.addEventListener('click', function(event) {
+  tank.addEventListener("click", function (event) {
     const rect = tank.getBoundingClientRect();
     const y = event.clientY - rect.top;
-    const newLevel = 100 - (y / rect.height * 100);
+    const newLevel = 100 - (y / rect.height) * 100;
     setWaterLevel(newLevel);
   });
-  
+
   tank.addEventListener("mousedown", function (event) {
     isDragging = true;
   });
@@ -106,8 +105,27 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
+  window.addThres = function () {
+    console.log("editIndex from addThres: " + editIndex);
+  
+    // Get existing thresholds from local storage
+    const oldData = localStorage.getItem("rules");
+    let oldRules = JSON.parse(oldData);
+    let currentThres = oldRules["rules"][editIndex]["thres"];
+  
+    // Add a new threshold to the array
+    currentThres.push({ min: 0, max: 0 });
+  
+    // Update local storage
+    oldRules["rules"][editIndex]["thres"] = currentThres;
+    localStorage.setItem("rules", JSON.stringify(oldRules));
+  
+    // Generate new card
+    generateCards(oldRules["rules"][editIndex]["name"], currentThres);
+  };
+  
+
   window.saveRule = function () {
-    console.log("editIndex from saveRule: " + editIndex);
     const ruleNameInput = document.getElementById("ruleNameInput").value;
     const minInputs = document.querySelectorAll(".min-input");
     const maxInputs = document.querySelectorAll(".max-input");
@@ -130,14 +148,16 @@ document.addEventListener("DOMContentLoaded", function () {
     window.location.reload();
   };
 
-  function generateCards(thresholds) {
+  function generateCards(rulename, thresholds) {
     const sortableCards = document.getElementById("sortableCards");
     sortableCards.innerHTML = "";
 
     thresholds.forEach((threshold, index) => {
       const card = document.createElement("div");
-      card.className = "card mt-3";
+      card.className = "card mt-3 position-relative";
+      card.id = rulename + "-" + index;
       card.innerHTML = `
+        <button type="button" class="btn-close btn-close-red position-absolute top-0 end-0" aria-label="Close" onclick="deleteCard('${rulename}', ${index}, '${card.id}')"></button>
         <div class="card-body">
           <div class="d-flex justify-content-between">
             <div style="width: 48%">
@@ -155,6 +175,23 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
+  window.deleteCard = function (rulename, index, id) {
+    console.log(id);
+    const jsonData = localStorage.getItem("rules");
+    let decodedData = JSON.parse(jsonData);
+
+    const findRule = decodedData.rules.find((rule) => rule.name === rulename);
+
+    if (findRule) {
+      findRule.thres.splice(index, 1);
+    }
+
+    localStorage.setItem("rules", JSON.stringify(decodedData)); //kiv 0838 4/10/23
+
+    const element = document.getElementById(id);
+    element.parentNode.removeChild(element);
+  };
+
   window.showModal = function (index) {
     editIndex = index;
     console.log("editIndex : " + editIndex);
@@ -165,7 +202,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const storedRule = JSON.parse(localStorage.getItem(rule.name) || "{}");
     ruleNameInput.value = storedRule.name || rule.name;
 
-    generateCards(storedRule.thres || rule.thres || []);
+    generateCards(ruleNameInput.value, storedRule.thres || rule.thres || []);
 
     $(modal).modal("show");
   };
@@ -177,13 +214,14 @@ document.addEventListener("DOMContentLoaded", function () {
       const newRow = document.createElement("tr");
       newRow.innerHTML = `
             <td>${index + 1}</td>
-            <td onclick="showModal(${index})" style="cursor: pointer;">${rule.name}</td>
+            <td onclick="showModal(${index})" style="cursor: pointer;">${
+        rule.name
+      }</td>
             <td><button onclick="deleteRule(${index})"><span class='text-danger'>🗑️</span></button></td>
           `;
       ruleTable.appendChild(newRow);
     });
   }
-
 
   window.deleteRule = function (index) {
     console.log("Delete rule function called.");
@@ -195,7 +233,6 @@ document.addEventListener("DOMContentLoaded", function () {
     saveRules();
     loadRules();
   };
-  
 
   //   window.deleteRule = function (index) {
   //     const ruleToDelete = rules[index];

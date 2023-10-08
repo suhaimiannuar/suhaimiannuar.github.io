@@ -85,8 +85,29 @@ document.addEventListener("DOMContentLoaded", function () {
     ],
   });
 
+  function isValidStructure(obj) {
+    if (!obj || !Array.isArray(obj.rules)) return false;
+    for (const rule of obj.rules) {
+      if (!rule.name || !Array.isArray(rule.thres)) return false;
+      for (const thres of rule.thres) {
+        if (!thres.name || thres.min === undefined || thres.max === undefined)
+          return false;
+      }
+    }
+    return true;
+  }
+
+  
+
   const checkRule = localStorage.getItem("rules");
   if (checkRule == null) {
+    localStorage.setItem("rules", defaultRules);
+    checkRule = localStorage.getItem("rules");
+  }
+
+  const parsedCheckRule = JSON.parse(checkRule);
+  if (!isValidStructure(parsedCheckRule)) {
+    console.log("reset due to different schema");
     localStorage.setItem("rules", defaultRules);
   }
 

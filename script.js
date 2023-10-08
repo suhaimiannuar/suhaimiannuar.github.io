@@ -59,27 +59,27 @@ document.addEventListener("DOMContentLoaded", function () {
   const defaultRules = JSON.stringify({
     rules: [
       {
-        name: "rule1",
+        name: "Rule 1",
         thres: [
-          { min: 1, max: 2 },
-          { min: 3, max: 4 },
-          { min: 5, max: 6 },
+          { name: "Threshold 1", min: 1, max: 2 },
+          { name: "Threshold 2", min: 3, max: 4 },
+          { name: "Threshold 3", min: 5, max: 6 },
         ],
       },
       {
-        name: "rule2",
+        name: "Rule 2",
         thres: [
-          { min: 7, max: 8 },
-          { min: 9, max: 10 },
-          { min: 11, max: 12 },
+          { name: "Threshold 1", min: 7, max: 8 },
+          { name: "Threshold 2", min: 9, max: 10 },
+          { name: "Threshold 3", min: 11, max: 12 },
         ],
       },
       {
-        name: "rule3",
+        name: "Rule 3",
         thres: [
-          { min: 13, max: 14 },
-          { min: 15, max: 16 },
-          { min: 17, max: 18 },
+          { name: "Threshold 1", min: 13, max: 14 },
+          { name: "Threshold 2", min: 15, max: 16 },
+          { name: "Threshold 3", min: 17, max: 18 },
         ],
       },
     ],
@@ -96,7 +96,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function saveRules() {
     localStorage.setItem("rules", JSON.stringify({ rules: rules }));
-    console.log("localStorage:", localStorage.getItem("rules"));
   }
 
   function renumberRules() {
@@ -106,38 +105,53 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   window.addThres = function () {
-    console.log("editIndex from addThres: " + editIndex);
-  
-    // Get existing thresholds from local storage
     const oldData = localStorage.getItem("rules");
     let oldRules = JSON.parse(oldData);
     let currentThres = oldRules["rules"][editIndex]["thres"];
-  
-    // Add a new threshold to the array
-    currentThres.push({ min: 0, max: 0 });
-  
-    // Update local storage
+
+    // Find the next available threshold number
+    let nextNumber = 1;
+    let existingNumbers = currentThres
+      .map((thres) => {
+        const match = thres.name.match(/Threshold (\d+)/);
+        return match ? parseInt(match[1]) : 0;
+      })
+      .sort((a, b) => a - b);
+
+    for (let i = 0; i < existingNumbers.length; i++) {
+      if (existingNumbers[i] === nextNumber) {
+        nextNumber++;
+      } else {
+        break;
+      }
+    }
+
+    // Add the new threshold
+    currentThres.push({ name: `Threshold ${nextNumber}`, min: 0, max: 0 });
+
     oldRules["rules"][editIndex]["thres"] = currentThres;
     localStorage.setItem("rules", JSON.stringify(oldRules));
-  
-    // Generate new card
+
     generateCards(oldRules["rules"][editIndex]["name"], currentThres);
+
+    console.log(currentThres);
   };
-  
 
   window.saveRule = function () {
     const ruleNameInput = document.getElementById("ruleNameInput").value;
     const minInputs = document.querySelectorAll(".min-input");
     const maxInputs = document.querySelectorAll(".max-input");
+    const thresNameInputs = document.querySelectorAll(".thresname-input");
 
+    console.log("hellos");
+    console.log(thresNameInputs);
     const thresholds = [];
     minInputs.forEach((minInput, index) => {
       const min = parseFloat(minInput.value);
       const max = parseFloat(maxInputs[index].value);
-      thresholds.push({ min, max });
+      const name = thresNameInputs[index].innerHTML;
+      thresholds.push({ name, min, max });
     });
-    console.log(thresholds);
-    console.log(ruleNameInput);
 
     const oldData = localStorage.getItem("rules");
     let oldRules = JSON.parse(oldData);
@@ -157,7 +171,10 @@ document.addEventListener("DOMContentLoaded", function () {
       card.className = "card mt-3 position-relative";
       card.id = rulename + "-" + index;
       card.innerHTML = `
-        <button type="button" class="btn-close btn-close-red position-absolute top-0 end-0" aria-label="Close" onclick="deleteCard('${rulename}', ${index}, '${card.id}')"></button>
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span class="thresname-input">${threshold.name}</span>
+          <button type="button" class="btn-close btn-close-red" aria-label="Close" onclick="deleteCard('${rulename}', ${index}, '${card.id}')"></button>
+        </div>
         <div class="card-body">
           <div class="d-flex justify-content-between">
             <div style="width: 48%">
@@ -176,7 +193,6 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   window.deleteCard = function (rulename, index, id) {
-    console.log(id);
     const jsonData = localStorage.getItem("rules");
     let decodedData = JSON.parse(jsonData);
 
@@ -194,7 +210,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   window.showModal = function (index) {
     editIndex = index;
-    console.log("editIndex : " + editIndex);
     const rule = rules[index];
     const modal = document.getElementById("ruleModal");
     const ruleNameInput = document.getElementById("ruleNameInput");
@@ -224,32 +239,13 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   window.deleteRule = function (index) {
-    console.log("Delete rule function called.");
     const ruleToDelete = rules[index];
     localStorage.removeItem(ruleToDelete.name);
-    console.log(`Deleted ${ruleToDelete.name} from LocalStorage`);
     rules.splice(index, 1);
     renumberRules();
     saveRules();
     loadRules();
   };
-
-  //   window.deleteRule = function (index) {
-  //     const ruleToDelete = rules[index];
-  //     $("#deleteModal").modal("show");
-
-  //     document
-  //       .getElementById("confirmDelete")
-  //       .addEventListener("click", function () {
-  //         localStorage.removeItem(ruleToDelete.name);
-  //         console.log(`Deleted ${ruleToDelete.name} from LocalStorage`);
-  //         rules.splice(index, 1);
-  //         renumberRules();
-  //         saveRules();
-  //         loadRules();
-  //         $("#deleteModal").modal("hide");
-  //       });
-  //   };
 
   window.makeEditable = function (element, index) {
     element.setAttribute("contenteditable", "true");
